@@ -1,0 +1,30 @@
+# Example Picture Cross Input
+# '#' denotes comments
+# 
+# NumRows NumCols
+3 3
+# Board appears as follows
+#     2 1 2
+# 1   _ _ X
+# 1 1 X _ X
+# 2   X X _
+# Rows first
+# 
+# Each row on its own line
+1
+1 1
+2
+# Now the columns
+#
+# Each column on its own line
+2
+1
+2
+# Without the comments the file would have appeared as follows:
+# 3 3
+# 1
+# 1 1
+# 2
+# 2
+# 1
+# 2

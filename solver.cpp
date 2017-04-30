@@ -1,15 +1,20 @@
+
 /* solver.cpp
+ *
  * Luke Justice (lmjustic@umich.edu)
  * Last Updated: 2017-04-29
  * 
  * This program is meant to solve Picture Cross puzzles 
  * (How to Play: https://youtu.be/d-I5Ng2oYyM) by using a backtracking
  * algorithm provided the rows and columns.
+ *
  */
 
 #include <algorithm>
+#include <exception>
 #include <fstream>
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -19,18 +24,27 @@ using namespace std;
 
 
 void printHelp(char* function);
-bool solve(vector<vector<int>>& board, vector<vector<int>>& rows, 
+void readBoard(ifstream& ifs, vector<vector<int>>& rows,
+	vector<vector<int>>& cols);
+/*bool solve(vector<vector<int>>& board, vector<vector<int>>& rows, 
 	vector<vector<int>>& cols);
 bool isValid(vector<vector<int>>& board, vector<vector<int>>& rows, 
-	vector<vector<int>>& cols, pair<size_t, size_t>& pos);
-void printBoard(vector<vector<int>>& board);
+	vector<vector<int>>& cols, pair<size_t, size_t>& pos);*/
+void printBoard(vector<vector<int>>& board, ofstream& ofs);
 
 
+// Driver for the Picross Solver
 int main(int argc, char *argv[]) {
 	std::ios_base::sync_with_stdio(false);
 
 	string infilename = "";
 	string outfilename = "";
+	ifstream ifs;
+	ofstream ofs;
+
+	vector<vector<int>> rows;
+	vector<vector<int>> cols;
+	vector<vector<int>> board;
 
 	// These are used with getopt_long()
     opterr = true; // Give us help with errors
@@ -49,7 +63,7 @@ int main(int argc, char *argv[]) {
         switch (choice) {
         case 'h':
             printHelp(argv[0]);
-            return(0);
+            return 0;
 
         case 'i':
         	infilename = optarg;
@@ -61,12 +75,42 @@ int main(int argc, char *argv[]) {
 
         default:
             cerr << "Error: invalid option " << choice << endl;
-            return(1);
+            return 1;
         } // switch
     } // while
 
+    // Makes sure the input file opens
+    ifs.open(infilename);
+    if (!ifs.is_open()) {
+    	cerr << "Error: " << infilename << " could not be opened" << endl;
+    	return 1;
+    }
 
+    try {
+    	readBoard(ifs, rows, cols);
+    } catch (exception& e) {
+    	cerr << e.what() << endl;
+        ifs.close();
+    	return 1;
+    }
 
+    ifs.close();
+
+    for (size_t i = 0; i < rows.size(); i++) {
+        board.emplace_back();
+        board[i].resize(cols.size(), -1);
+    }
+
+    // Makes sure the output file opens
+    ofs.open(outfilename);
+    if (!ofs.is_open()) {
+    	cerr << "Error: " << outfilename << " could not be opened" << endl;
+    	return 1;
+    }
+
+    printBoard(board, ofs);
+
+    ofs.close();
 	return 0;
 } // main()
 
@@ -74,8 +118,96 @@ int main(int argc, char *argv[]) {
 // Prints a usage help 
 void printHelp(char* function) {
     cout << "Usage: " << function << " -i \"infile\" -o \"outfile\"\n";
-    cout << "This program finds the solution to a \n";
-    cout << "find the minimum spanning tree to for a trade route using \n";
-    cout << "Prim's, and find the best path using the travelling salesman \n";
-    cout << "solution" << endl;;
+    cout << "This program finds the solution to a Picture Cross puzzle \n";
+    cout << "using a backtracking algorithm and prints the file as a .png \n";
+    cout << "file." << endl;
 } // printHelp()
+
+
+void readBoard(ifstream& ifs, vector<vector<int>>& rows,
+	vector<vector<int>>& cols) {
+
+	stringstream ss;
+	size_t numRows, numCols;
+	int value;
+	string line = "#";
+
+	// Reading the boardsize ignoring columns
+	while (line[0] == '#') {
+		getline(ifs, line);
+	}
+	ss.str(line);
+	if (!(ss >> numRows >> numCols)) {
+		throw runtime_error("Error: board dimensions could not be read\n");
+	}
+
+	rows.reserve(numRows);
+	cols.reserve(numCols);
+
+	// Reading the row values ignoring comments
+	for (size_t i = 0; i < numRows; i++) {
+		rows.emplace_back();
+
+		line = "#";
+		while (line[0] == '#') {
+			getline(ifs, line);
+		}
+        ss.clear();
+		ss.str(line);
+		
+		while (ss >> value) {
+			rows[i].push_back(value);
+		}
+
+		// Ensures that there is an entry for the row
+		if (rows[i].size() == 0) {
+			throw runtime_error("Error: rows could not be read\n");
+		}
+	}
+
+	// Reading the column values ignoring comments
+	for (size_t i = 0; i < numCols; i++) {
+		cols.emplace_back();
+
+		line = "#";
+		while (line[0] == '#') {
+			getline(ifs, line);
+		}
+        ss.clear();
+		ss.str(line);
+		
+		while (ss >> value) {
+			cols[i].push_back(value);
+		}
+
+		// Ensures that there is an entry for the column
+		if (cols[i].size() == 0) {
+			throw runtime_error("Error: columns could not be read\n");
+		}
+	}
+} // readBoard()
+
+/*
+bool solve(vector<vector<int>>& board, vector<vector<int>>& rows, 
+	vector<vector<int>>& cols) {
+
+	return true;
+} // solve()
+
+
+bool isValid(vector<vector<int>>& board, vector<vector<int>>& rows, 
+	vector<vector<int>>& cols, pair<size_t, size_t>& pos) {
+
+	return true;
+} // isValid()
+*/
+
+void printBoard(vector<vector<int>>& board, ofstream& ofs) {
+	// TODO: Write as an image format
+	for (size_t i = 0; i < board.size(); i++) {
+		for (size_t j = 0; j < board[i].size(); j++) {
+			ofs << board[i][j] << " ";
+		}
+		ofs << endl;
+	}
+} // printBoard()
