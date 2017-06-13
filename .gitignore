@@ -1,0 +1,16 @@
+# Add any directories, files, or patterns you don't want to be tracked by version control
+# Pictures
+*.png
+*.jpg
+*.jpeg
+*.bmp
+
+# Test cases
+*.txt
+
+# getopt folder
+getopt/
+
+# Executables and Object files
+*.exe
+*.o

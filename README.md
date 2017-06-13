@@ -1,5 +1,5 @@
 # Picture Cross Solver
-Created by Luke Justice
+Created by [Luke Justice](https://github.com/lmjustic)
 ### Description
 This program will solve Picture Cross puzzles (How to Play: [https://youtu.be/d-I5Ng2oYyM](https://youtu.be/d-I5Ng2oYyM)).
 This is accomplished by using a backtracking algorithm to brute force a solution.
